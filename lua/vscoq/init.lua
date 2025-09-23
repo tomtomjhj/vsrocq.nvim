@@ -85,7 +85,7 @@ local function proofView_notification_handler(_, result, ctx, _)
 end
 
 local vscoqtop_config = {
-  cmd = { 'vscoqtop' },
+  cmd = { 'vsrocqtop' },
   filetypes = { 'coq' },
   root_markers = { '_CoqProject', '.git' },
 }
