@@ -84,6 +84,12 @@ local function proofView_notification_handler(_, result, ctx, _)
   M.clients[ctx.client_id]:proofView(result)
 end
 
+local vscoqtop_config = {
+  cmd = { 'vscoqtop' },
+  filetypes = { 'coq' },
+  root_markers = { '_CoqProject', '.git' },
+}
+
 -- TODO: don't use custom setup and use lspconfig's add_hook_before?
 ---@param opts { vscoq?: table<string,any>, lsp?: table<string,any> }
 function M.setup(opts)
@@ -108,7 +114,8 @@ function M.setup(opts)
     "[vscoq.nvim] settings must be passed via 'vscoq' field"
   )
   opts.lsp.init_options = opts.vscoq:to_lsp_options()
-  require('lspconfig').vscoqtop.setup(opts.lsp)
+  vim.lsp.config('vscoqtop', vim.tbl_deep_extend('force', vscoqtop_config, opts.lsp))
+  vim.lsp.enable('vscoqtop')
 end
 
 return M

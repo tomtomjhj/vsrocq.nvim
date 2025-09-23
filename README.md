@@ -8,7 +8,6 @@ A Neovim client for [VsCoq 2 `vscoqtop`](https://github.com/coq-community/vscoq)
 ## Setup
 ### [vim-plug](https://github.com/junegunn/vim-plug)
 ```vim
-Plug 'neovim/nvim-lspconfig'
 Plug 'whonore/Coqtail' " for ftdetect, syntax, basic ftplugin, etc
 Plug 'tomtomjhj/vscoq.nvim'
 
@@ -35,7 +34,6 @@ lua require'vscoq'.setup()
   'tomtomjhj/vscoq.nvim',
   filetypes = 'coq',
   dependecies = {
-    'neovim/nvim-lspconfig',
     'whonore/Coqtail',
   },
   opts = {
@@ -69,9 +67,6 @@ lua require'vscoq'.setup()
         * `:VsCoq goals`: Show the normal goals and messages (default).
     * etc
         * `:VsCoq jumpToEnd`: Jump to the end of the checked region.
-* [Commands from nvim-lspconfig](https://github.com/neovim/nvim-lspconfig#commands)
-  work as expected.
-  For example, run `:LspRestart` to restart `vscoqtop`.
 
 ## Configurations
 The `setup()` function takes a table with the followings keys:
