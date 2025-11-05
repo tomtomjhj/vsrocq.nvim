@@ -1,12 +1,12 @@
 local M = {}
 
-local pp = require('vscoq.pp')
-local TaggedLines = require('vscoq.tagged_lines')
+local pp = require('vsrocq.pp')
+local TaggedLines = require('vsrocq.tagged_lines')
 
----@param goal vscoq.Goal
+---@param goal vsrocq.Goal
 ---@param i integer
 ---@param n integer
----@return vscoq.TaggedLines
+---@return vsrocq.TaggedLines
 function M.goal(i, n, goal)
   local tl = TaggedLines.new()
   tl:add_line(string.format('Goal %d (%d / %d)', goal.id, i, n))
@@ -20,7 +20,7 @@ function M.goal(i, n, goal)
   return tl
 end
 
----@param goals vscoq.Goal[]
+---@param goals vsrocq.Goal[]
 ---@return string[]
 function M.goals(goals)
   local tl = TaggedLines.new()
@@ -48,8 +48,8 @@ hi def link VsCoqHint DiagnosticHint
 -- NOTE
 -- * no severity tag in pp
 -- * output of `info_eauto` is multiple messages
----@param messages vscoq.CoqMessage[]
----@return vscoq.TaggedLines
+---@param messages vsrocq.CoqMessage[]
+---@return vsrocq.TaggedLines
 function M.CoqMessages(messages)
   local tl = TaggedLines.new()
   for _, message in ipairs(messages) do
@@ -62,9 +62,9 @@ function M.CoqMessages(messages)
   return tl
 end
 
----@param proofView vscoq.ProofViewNotification
+---@param proofView vsrocq.ProofViewNotification
 ---@param items ('goals'|'messages'|'shelvedGoals'|'givenUpGoals')[]
----@return vscoq.TaggedLines
+---@return vsrocq.TaggedLines
 function M.proofView(proofView, items)
   local tl = TaggedLines.new()
 
@@ -132,8 +132,8 @@ function M.proofView(proofView, items)
   return tl
 end
 
----@param result vscoq.SearchCoqResult
----@return vscoq.TaggedLines
+---@param result vsrocq.SearchCoqResult
+---@return vsrocq.TaggedLines
 function M.searchCoqResult(result)
   local tl = TaggedLines.new()
   tl:append(pp(result.name))

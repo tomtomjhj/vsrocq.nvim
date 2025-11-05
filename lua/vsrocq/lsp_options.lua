@@ -4,7 +4,7 @@
 -- is following setting of vscoqtop
 --- https://github.com/coq/vscoq/blob/main/language-server/protocol/settings.ml
 
----@class vscoq.LspOptions
+---@class vsrocq.LspOptions
 local LspOptions = {
   memory = {
     ---@type integer
@@ -85,8 +85,8 @@ local proof_pointInterpretationMode_table = {
   NextCommand = 1,
 }
 
----@param config vscoq.Config
----@return vscoq.LspOptions
+---@param config vsrocq.Config
+---@return vsrocq.LspOptions
 function LspOptions:new(config)
   local lsp_opts = {
     memory = vim.deepcopy(config.memory),
