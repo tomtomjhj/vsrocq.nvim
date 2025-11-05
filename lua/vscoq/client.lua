@@ -247,7 +247,7 @@ function VSCoqNvim:interpretToPoint(bufnr, position)
     textDocument = util.make_versioned_text_document_params(bufnr),
     position = util.make_position_params(bufnr, position, self.lc.offset_encoding),
   }
-  return self.lc:notify('vscoq/interpretToPoint', params)
+  return self.lc:notify('prover/interpretToPoint', params)
 end
 commands[#commands + 1] = 'interpretToPoint'
 
@@ -262,13 +262,13 @@ function VSCoqNvim:step(method, bufnr)
 end
 
 function VSCoqNvim:stepForward()
-  return self:step('vscoq/stepForward')
+  return self:step('prover/stepForward')
 end
 function VSCoqNvim:stepBackward()
-  return self:step('vscoq/stepBackward')
+  return self:step('prover/stepBackward')
 end
 function VSCoqNvim:interpretToEnd()
-  return self:step('vscoq/interpretToEnd')
+  return self:step('prover/interpretToEnd')
 end
 commands[#commands + 1] = 'stepForward'
 commands[#commands + 1] = 'stepBackward'
@@ -288,7 +288,7 @@ function VSCoqNvim:search(pattern, bufnr, position)
     position = util.make_position_params(bufnr, position, self.lc.offset_encoding),
     pattern = pattern,
   }
-  util.request_async(self.lc, bufnr, 'vscoq/search', params, function(err)
+  util.request_async(self.lc, bufnr, 'prover/search', params, function(err)
     if err then
       vim.notify(
         ('[vscoq.nvim] vscoq/search error:\nparam:\n%s\nerror:%s\n'):format(
@@ -364,16 +364,16 @@ function VSCoqNvim:simple_query(method, pattern, bufnr, position)
 end
 
 function VSCoqNvim:about(pattern)
-  self:simple_query('vscoq/about', pattern)
+  self:simple_query('prover/about', pattern)
 end
 function VSCoqNvim:check(pattern)
-  self:simple_query('vscoq/check', pattern)
+  self:simple_query('prover/check', pattern)
 end
 function VSCoqNvim:print(pattern)
-  self:simple_query('vscoq/print', pattern)
+  self:simple_query('prover/print', pattern)
 end
 function VSCoqNvim:locate(pattern)
-  self:simple_query('vscoq/locate', pattern)
+  self:simple_query('prover/locate', pattern)
 end
 commands[#commands + 1] = 'about'
 commands[#commands + 1] = 'check'
@@ -387,7 +387,7 @@ function VSCoqNvim:resetCoq(bufnr)
   local params = {
     textDocument = util.make_versioned_text_document_params(bufnr),
   }
-  util.request_async(self.lc, bufnr, 'vscoq/resetCoq', params, function(err)
+  util.request_async(self.lc, bufnr, 'prover/resetRocq', params, function(err)
     if err then
       vim.notify(
         ('[vscoq.nvim] resetCoq error:\nparam:\n%s\nerror:%s\n'):format(

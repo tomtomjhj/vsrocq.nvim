@@ -98,10 +98,10 @@ function M.setup(opts)
   opts.vscoq = Config:new(opts.vscoq or {})
 
   opts.lsp.handlers = vim.tbl_extend('keep', opts.lsp.handlers or {}, {
-    ['vscoq/updateHighlights'] = updateHighlights_notification_handler,
-    ['vscoq/moveCursor'] = moveCursor_notification_handler,
-    ['vscoq/searchResult'] = searchResult_notification_handler,
-    ['vscoq/proofView'] = proofView_notification_handler,
+    ['prover/updateHighlights'] = updateHighlights_notification_handler,
+    ['prover/moveCursor'] = moveCursor_notification_handler,
+    ['prover/searchResult'] = searchResult_notification_handler,
+    ['prover/proofView'] = proofView_notification_handler,
   })
   local user_on_init = opts.lsp.on_init
   opts.lsp.on_init = make_on_init(user_on_init, opts.vscoq)
