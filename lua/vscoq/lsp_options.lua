@@ -21,6 +21,9 @@ local LspOptions = {
       ---@type boolean
       full = true,
     },
+
+    ---@type "String"|"Pp"
+    ppmode = "Pp",
   },
 
   proof = {
@@ -90,6 +93,7 @@ function LspOptions:new(config)
     goals = {
       diff = vim.deepcopy(config.goals.diff),
       messages = vim.deepcopy(config.goals.messages),
+      ppmode = config.goals.ppmode,
     },
     proof = {
       mode = proof_mode_table[config.proof.mode],

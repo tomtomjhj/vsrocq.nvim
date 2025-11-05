@@ -16,6 +16,9 @@ local Config = {
       full = true,
     },
 
+    ---@type "String"|"Pp"
+    ppmode = "Pp",
+
     ---@type integer
     maxDepth = 17,
   },
@@ -63,6 +66,7 @@ Config.__index = Config
 
 -- keys in config
 local goals_diff_keys = { 'off', 'on', 'removed' }
+local goals_ppmode_keys = { 'Pp', 'String' }
 local proof_delegation_keys = { 'None', 'Skip', 'Delegate' }
 local proof_mode_keys = { 'Manual', 'Continuous' }
 local proof_pointInterpretationMode_keys = { 'Cursor', 'NextCommand' }
@@ -94,6 +98,11 @@ function Config:new(opts)
     ['vscoq.goals.messages'] = { config.goals.messages, 'table' },
     ['vscoq.goals.messages.full'] = { config.goals.messages.full, 'boolean' },
     ['vscoq.goals.maxDepth'] = { config.goals.maxDepth, 'number' },
+    ['vscoq.goals.ppmode'] = {
+      config.goals.ppmode,
+      function(x) return type(x) == 'string' and vim.list_contains(goals_ppmode_keys, x) end,
+      'ome of ' .. table.concat(goals_ppmode_keys, ', '),
+    },
     ['vscoq.proof'] = { config.proof, 'table' },
     ['vscoq.proof.mode'] = {
       config.proof.mode,
