@@ -87,7 +87,7 @@ end
 local vscoqtop_config = {
   cmd = { 'vsrocqtop' },
   filetypes = { 'coq' },
-  root_markers = { '_CoqProject', '.git' },
+  root_markers = { '_RocqProject', '_CoqProject', '.git' },
 }
 
 -- TODO: don't use custom setup and use lspconfig's add_hook_before?
