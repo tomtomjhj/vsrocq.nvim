@@ -18,19 +18,19 @@ local Config = require('vsrocq.config')
 ---@class vsrocq.Config
 M.default_config = Config
 
----@type table<integer, VSCoqNvim> map from client id
+---@type table<integer, VSRocqNvim> map from client id
 M.clients = {}
 
 ---@param config vsrocq.Config
 ---@return fun(client: vim.lsp.Client, initialize_result: lsp.InitializeResult)
 local function make_on_init(user_on_init, config)
   return function(client, initialize_result)
-    local ok, VSCoqNvim = pcall(require, 'vsrocq.client')
+    local ok, VSRocqNvim = pcall(require, 'vsrocq.client')
     if not ok then
-      vim.print('[vsrocq.nvim] on_init failed', VSCoqNvim)
+      vim.print('[vsrocq.nvim] on_init failed', VSRocqNvim)
       return
     end
-    M.clients[client.id] = VSCoqNvim:new(client, config)
+    M.clients[client.id] = VSRocqNvim:new(client, config)
     M.clients[client.id]:panels()
     if user_on_init then
       user_on_init(client, initialize_result)

@@ -132,12 +132,12 @@
 ---|3 # information
 ---|4 # hint
 
----@alias vsrocq.CoqMessage {[1]: vsrocq.MessageSeverity, [2]: vsrocq.PpString}
+---@alias vsrocq.RocqMessage {[1]: vsrocq.MessageSeverity, [2]: vsrocq.PpString}
 
 ---"vsrocq/proofView" notification (server → client) parameter.
 ---@class vsrocq.ProofViewNotification
 ---@field proof vsrocq.ProofViewGoals|vim.NIL|nil
----@field messages vsrocq.CoqMessage[]
+---@field messages vsrocq.RocqMessage[]
 
 ---"vsrocq/moveCursor" notification (server → client) parameter.
 ---Sent as response to "vsrocq/stepForward" and "vsrocq/stepBack" notifications.
@@ -150,31 +150,31 @@
 -- TODO: query response does not contain appropriate line breaks for window width (unlike coqide)
 
 ---"vsrocq/search" request parameter.
----@class vsrocq.SearchCoqRequest
+---@class vsrocq.SearchRocqRequest
 ---@field id string this doesn't need to be an actual UUID
 ---@field textDocument lsp.VersionedTextDocumentIdentifier
 ---@field pattern string
 ---@field position lsp.Position
 
 ---"vsrocq/search" response parameter.
----@class vsrocq.SearchCoqHandshake
+---@class vsrocq.SearchRocqHandshake
 ---@field id string
 
 ---"vsrocq/searchResult" notification parameter.
----@class vsrocq.SearchCoqResult
+---@class vsrocq.SearchRocqResult
 ---@field id string
 ---@field name vsrocq.PpString
 ---@field statement vsrocq.PpString
 
 ---Request parameter for "vsrocq/about", "vsrocq/check", "vsrocq/print", "vsrocq/locate"
----@class vsrocq.SimpleCoqRequest
+---@class vsrocq.SimpleRocqRequest
 ---@field textDocument lsp.VersionedTextDocumentIdentifier
 ---@field pattern string
 ---@field position lsp.Position
 
 ---Response parameter for "vsrocq/about", "vsrocq/check", "vsrocq/print", "vsrocq/locate"
----@alias vsrocq.SimpleCoqReponse vsrocq.PpString
+---@alias vsrocq.SimpleRocqReponse vsrocq.PpString
 
----Request parameter for "vsrocq/resetCoq"
----@class vsrocq.ResetCoqRequest
+---Request parameter for "vsrocq/resetRocq"
+---@class vsrocq.ResetRocqRequest
 ---@field textDocument lsp.VersionedTextDocumentIdentifier

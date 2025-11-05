@@ -39,23 +39,23 @@ function M.goals(goals)
 end
 
 vim.cmd([[
-hi def link VsCoqError DiagnosticError
-hi def link VsCoqWarn DiagnosticWarn
-hi def link VsCoqInfo DiagnosticInfo
-hi def link VsCoqHint DiagnosticHint
+hi def link VsRocqError DiagnosticError
+hi def link VsRocqWarn DiagnosticWarn
+hi def link VsRocqInfo DiagnosticInfo
+hi def link VsRocqHint DiagnosticHint
 ]])
 
 -- NOTE
 -- * no severity tag in pp
 -- * output of `info_eauto` is multiple messages
----@param messages vsrocq.CoqMessage[]
+---@param messages vsrocq.RocqMessage[]
 ---@return vsrocq.TaggedLines
-function M.CoqMessages(messages)
+function M.RocqMessages(messages)
   local tl = TaggedLines.new()
   for _, message in ipairs(messages) do
     tl:append(pp {
       'Ppcmd_tag',
-      ({ 'VsCoqError', 'VsCoqWarn', 'VsCoqInfo', 'VsCoqHint' })[message[1]],
+      ({ 'VsRocqError', 'VsRocqWarn', 'VsRocqInfo', 'VsRocqHint' })[message[1]],
       message[2],
     })
   end
@@ -132,9 +132,9 @@ function M.proofView(proofView, items)
   return tl
 end
 
----@param result vsrocq.SearchCoqResult
+---@param result vsrocq.SearchRocqResult
 ---@return vsrocq.TaggedLines
-function M.searchCoqResult(result)
+function M.searchRocqResult(result)
   local tl = TaggedLines.new()
   tl:append(pp(result.name))
   tl:append(pp(result.statement))
