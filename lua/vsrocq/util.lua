@@ -84,10 +84,10 @@ end
 ---@param handler? lsp.Handler
 ---@return fun()|nil cancel function to cancel the request
 function M.request_async(client, bufnr, method, params, handler)
-  local request_success, request_id = client.request(method, params, handler, bufnr)
+  local request_success, request_id = client:request(method, params, handler, bufnr)
   if request_success then
     return function()
-      client.cancel_request(assert(request_id))
+      client:cancel_request(assert(request_id))
     end
   end
 end
