@@ -1,12 +1,12 @@
----@class vscoq.TaggedLines
+---@class vsrocq.TaggedLines
 ---@field [1] string[]
----@field [2] vscoq.Tag[]
+---@field [2] vsrocq.Tag[]
 local TaggedLines = {}
 TaggedLines.__index = TaggedLines
 
 ---@param lines? string[]
----@param tags? vscoq.Tag[]
----@return vscoq.TaggedLines
+---@param tags? vsrocq.Tag[]
+---@return vsrocq.TaggedLines
 function TaggedLines.new(lines, tags)
   return setmetatable({ lines or {}, tags or {} }, TaggedLines)
 end
@@ -16,7 +16,7 @@ function TaggedLines:add_line(line)
   self[1][#self[1] + 1] = line
 end
 
----@param tl vscoq.TaggedLines
+---@param tl vsrocq.TaggedLines
 function TaggedLines:append(tl)
   local offset = #self[1]
   for _, tag in ipairs(tl[2]) do

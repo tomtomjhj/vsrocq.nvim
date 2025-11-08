@@ -1,33 +1,33 @@
-local util = require('vscoq.util')
-local pp = require('vscoq.pp')
-local render = require('vscoq.render')
+local util = require('vsrocq.util')
+local pp = require('vsrocq.pp')
+local render = require('vsrocq.render')
 
----@class VSCoqNvim
+---@class VSRocqNvim
 ---@field lc vim.lsp.Client
----@field config vscoq.Config the current configuration
+---@field config vsrocq.Config the current configuration
 -- TODO: Since proofView notification doesn't send which document it is for,
 -- for now we have a single proofview panel.
 -- Once fixed, make config for single/multi proofview.
 -- ---@field buffers table<buffer, { proofview_bufnr: buffer }>
----@field buffers table<buffer, { highlights: vscoq.UpdateHighlightsNotification }>
+---@field buffers table<buffer, { highlights: vsrocq.UpdateHighlightsNotification }>
 ---@field proofview_panel buffer
----@field proofview_content? vscoq.ProofViewNotification
+---@field proofview_content? vsrocq.ProofViewNotification
 ---@field query_panel buffer
 ---@field query_id integer latest query id. Only the latest query result is displayed.
 ---@field debounce_timer uv.uv_timer_t
 ---@field highlight_ns integer
 ---@field tag_ns integer
 ---@field ag integer
-local VSCoqNvim = {}
-VSCoqNvim.__index = VSCoqNvim
+local VSRocqNvim = {}
+VSRocqNvim.__index = VSRocqNvim
 
 ---@type string[] command names
 local commands = {}
 
 ---@param client vim.lsp.Client
----@param config vscoq.Config
----@return VSCoqNvim
-function VSCoqNvim:new(client, config)
+---@param config vsrocq.Config
+---@return VSRocqNvim
+function VSRocqNvim:new(client, config)
   local new = {
     lc = client,
     config = vim.deepcopy(config),
@@ -36,9 +36,9 @@ function VSCoqNvim:new(client, config)
     query_panel = -1,
     query_id = 0,
     debounce_timer = assert(vim.uv.new_timer(), 'Could not create timer'),
-    highlight_ns = vim.api.nvim_create_namespace('vscoq-progress-' .. client.id),
-    tag_ns = vim.api.nvim_create_namespace('vscoq-tag-' .. client.id),
-    ag = vim.api.nvim_create_augroup('vscoq-' .. client.id, { clear = true }),
+    highlight_ns = vim.api.nvim_create_namespace('vsrocq-progress-' .. client.id),
+    tag_ns = vim.api.nvim_create_namespace('vsrocq-tag-' .. client.id),
+    ag = vim.api.nvim_create_augroup('vsrocq-' .. client.id, { clear = true }),
   }
   setmetatable(new, self)
   new:ensure_proofview_panel()
@@ -47,23 +47,23 @@ function VSCoqNvim:new(client, config)
 end
 
 ---change config and send notification
-function VSCoqNvim:update_lsp_config()
+function VSRocqNvim:update_lsp_config()
   self.lc:notify('workspace/didChangeConfiguration', { settings = self.config:to_lsp_options() })
 end
 
-function VSCoqNvim:manual()
+function VSRocqNvim:manual()
   self.config.proof.mode = 'Manual'
   self:update_lsp_config()
 end
-function VSCoqNvim:continuous()
+function VSRocqNvim:continuous()
   self.config.proof.mode = 'Continuous'
   self:update_lsp_config()
 end
 commands[#commands + 1] = 'manual'
 commands[#commands + 1] = 'continuous'
 
----@param highlights vscoq.UpdateHighlightsNotification
-function VSCoqNvim:updateHighlights(highlights)
+---@param highlights vsrocq.UpdateHighlightsNotification
+function VSRocqNvim:updateHighlights(highlights)
   local bufnr = vim.uri_to_bufnr(highlights.uri)
   vim.api.nvim_buf_clear_namespace(bufnr, self.highlight_ns, 0, -1)
   self.buffers[bufnr].highlights = highlights
@@ -80,7 +80,7 @@ function VSCoqNvim:updateHighlights(highlights)
   end
 end
 
-function VSCoqNvim:jumpToEnd()
+function VSRocqNvim:jumpToEnd()
   local win = vim.api.nvim_get_current_win()
   local bufnr = vim.api.nvim_win_get_buf(win)
   if not self.buffers[bufnr] then
@@ -101,8 +101,8 @@ end
 
 commands[#commands + 1] = 'jumpToEnd'
 
----@param target vscoq.MoveCursorNotification
-function VSCoqNvim:moveCursor(target)
+---@param target vsrocq.MoveCursorNotification
+function VSRocqNvim:moveCursor(target)
   local bufnr = vim.uri_to_bufnr(target.uri)
   local wins = vim.fn.win_findbuf(bufnr) or {}
   if self.config.proof.mode == 'Manual' and self.config.proof.cursor.sticky then
@@ -115,14 +115,14 @@ function VSCoqNvim:moveCursor(target)
   end
 end
 
----@param proofView vscoq.ProofViewNotification
-function VSCoqNvim:proofView(proofView)
+---@param proofView vsrocq.ProofViewNotification
+function VSRocqNvim:proofView(proofView)
   self.proofview_content = proofView
   self:show_proofView { 'goals', 'messages' }
 end
 
 ---@param items ('goals'|'messages'|'shelvedGoals'|'givenUpGoals')[]
-function VSCoqNvim:show_proofView(items)
+function VSRocqNvim:show_proofView(items)
   assert(self.proofview_content)
 
   self:ensure_proofview_panel()
@@ -140,7 +140,7 @@ function VSCoqNvim:show_proofView(items)
 
   self:ensure_query_panel()
   if #self.proofview_content.messages > 0 then
-    local msg_tl = render.CoqMessages(self.proofview_content.messages)
+    local msg_tl = render.RocqMessages(self.proofview_content.messages)
     vim.bo[self.query_panel].undolevels = vim.bo[self.query_panel].undolevels
     vim.api.nvim_buf_set_lines(self.query_panel, 0, -1, false, msg_tl[1])
     for _, tag in ipairs(msg_tl[2]) do
@@ -168,17 +168,17 @@ function VSCoqNvim:show_proofView(items)
   end
 end
 
-function VSCoqNvim:shelved()
+function VSRocqNvim:shelved()
   if self.proofview_content then
     self:show_proofView { 'shelvedGoals' }
   end
 end
-function VSCoqNvim:admitted()
+function VSRocqNvim:admitted()
   if self.proofview_content then
     self:show_proofView { 'givenUpGoals' }
   end
 end
-function VSCoqNvim:goals()
+function VSRocqNvim:goals()
   if self.proofview_content then
     self:show_proofView { 'goals', 'messages' }
   end
@@ -188,7 +188,7 @@ commands[#commands + 1] = 'admitted'
 commands[#commands + 1] = 'goals'
 
 -- TODO: commands in panels
-function VSCoqNvim:ensure_proofview_panel()
+function VSRocqNvim:ensure_proofview_panel()
   if vim.api.nvim_buf_is_valid(self.proofview_panel) then
     if not vim.api.nvim_buf_is_loaded(self.proofview_panel) then
       vim.fn.bufload(self.proofview_panel)
@@ -199,7 +199,7 @@ function VSCoqNvim:ensure_proofview_panel()
   vim.bo[self.proofview_panel].filetype = 'coq-goals'
 end
 
-function VSCoqNvim:ensure_query_panel()
+function VSRocqNvim:ensure_query_panel()
   if vim.api.nvim_buf_is_valid(self.query_panel) then
     if not vim.api.nvim_buf_is_loaded(self.query_panel) then
       vim.fn.bufload(self.query_panel)
@@ -210,7 +210,7 @@ function VSCoqNvim:ensure_query_panel()
   vim.bo[self.query_panel].filetype = 'coq-infos'
 end
 
-function VSCoqNvim:panels()
+function VSRocqNvim:panels()
   self:ensure_proofview_panel()
   self:ensure_query_panel()
   local win = vim.api.nvim_get_current_win()
@@ -240,20 +240,20 @@ commands[#commands + 1] = 'panels'
 
 ---@param bufnr? buffer
 ---@param position? MarkPosition
-function VSCoqNvim:interpretToPoint(bufnr, position)
+function VSRocqNvim:interpretToPoint(bufnr, position)
   bufnr = bufnr or vim.api.nvim_get_current_buf()
   position = position or util.guess_position(bufnr)
   local params = {
     textDocument = util.make_versioned_text_document_params(bufnr),
     position = util.make_position_params(bufnr, position, self.lc.offset_encoding),
   }
-  return self.lc:notify('vscoq/interpretToPoint', params)
+  return self.lc:notify('prover/interpretToPoint', params)
 end
 commands[#commands + 1] = 'interpretToPoint'
 
----@param method "vscoq/stepForward"|"vscoq/stepBackward"|"vscoq/interpretToEnd"
+---@param method "vsrocq/stepForward"|"vsrocq/stepBackward"|"vsrocq/interpretToEnd"
 ---@param bufnr? buffer
-function VSCoqNvim:step(method, bufnr)
+function VSRocqNvim:step(method, bufnr)
   bufnr = bufnr or vim.api.nvim_get_current_buf()
   local params = {
     textDocument = util.make_versioned_text_document_params(bufnr),
@@ -261,14 +261,14 @@ function VSCoqNvim:step(method, bufnr)
   return self.lc:notify(method, params)
 end
 
-function VSCoqNvim:stepForward()
-  return self:step('vscoq/stepForward')
+function VSRocqNvim:stepForward()
+  return self:step('prover/stepForward')
 end
-function VSCoqNvim:stepBackward()
-  return self:step('vscoq/stepBackward')
+function VSRocqNvim:stepBackward()
+  return self:step('prover/stepBackward')
 end
-function VSCoqNvim:interpretToEnd()
-  return self:step('vscoq/interpretToEnd')
+function VSRocqNvim:interpretToEnd()
+  return self:step('prover/interpretToEnd')
 end
 commands[#commands + 1] = 'stepForward'
 commands[#commands + 1] = 'stepBackward'
@@ -277,21 +277,21 @@ commands[#commands + 1] = 'interpretToEnd'
 ---@param pattern string
 ---@param bufnr? buffer
 ---@param position? MarkPosition
-function VSCoqNvim:search(pattern, bufnr, position)
+function VSRocqNvim:search(pattern, bufnr, position)
   bufnr = bufnr or vim.api.nvim_get_current_buf()
   position = position or util.guess_position(bufnr)
   self.query_id = self.query_id + 1
-  ---@type vscoq.SearchCoqRequest
+  ---@type vsrocq.SearchRocqRequest
   local params = {
     id = tostring(self.query_id),
     textDocument = util.make_versioned_text_document_params(bufnr),
     position = util.make_position_params(bufnr, position, self.lc.offset_encoding),
     pattern = pattern,
   }
-  util.request_async(self.lc, bufnr, 'vscoq/search', params, function(err)
+  util.request_async(self.lc, bufnr, 'prover/search', params, function(err)
     if err then
       vim.notify(
-        ('[vscoq.nvim] vscoq/search error:\nparam:\n%s\nerror:%s\n'):format(
+        ('[vsrocq.nvim] vsrocq/search error:\nparam:\n%s\nerror:%s\n'):format(
           vim.inspect(params),
           vim.inspect(err)
         ),
@@ -307,8 +307,8 @@ function VSCoqNvim:search(pattern, bufnr, position)
 end
 commands[#commands + 1] = 'search'
 
----@param result vscoq.SearchCoqResult
-function VSCoqNvim:searchResult(result)
+---@param result vsrocq.SearchRocqResult
+function VSRocqNvim:searchResult(result)
   if tonumber(result.id) < self.query_id then
     return
   end
@@ -317,20 +317,20 @@ function VSCoqNvim:searchResult(result)
   -- Because of that, the panel should maintain TaggedLines to which the new items are appended.
   -- But it turns out there is no reason for search to be implemented that way.
   -- So let's not care about it and wait for the fix.
-  -- https://github.com/coq-community/vscoq/issues/906#issuecomment-2353000748
-  local tl = render.searchCoqResult(result)
+  -- https://github.com/rocq-prover/vsrocq/issues/906#issuecomment-2353000748
+  local tl = render.searchRocqResult(result)
   vim.api.nvim_buf_set_lines(self.query_panel, -1, -1, false, tl[1])
 end
 
----@param method "vscoq/about"|"vscoq/check"|"vscoq/print"|"vscoq/locate"
+---@param method "vsrocq/about"|"vsrocq/check"|"vsrocq/print"|"vsrocq/locate"
 ---@param pattern string
 ---@param bufnr? buffer
 ---@param position? MarkPosition
-function VSCoqNvim:simple_query(method, pattern, bufnr, position)
+function VSRocqNvim:simple_query(method, pattern, bufnr, position)
   bufnr = bufnr or vim.api.nvim_get_current_buf()
   position = position or util.guess_position(bufnr)
   self.query_id = self.query_id + 1
-  ---@type vscoq.SimpleCoqRequest
+  ---@type vsrocq.SimpleRocqRequest
   local params = {
     textDocument = util.make_versioned_text_document_params(bufnr),
     position = util.make_position_params(bufnr, position, self.lc.offset_encoding),
@@ -341,11 +341,11 @@ function VSCoqNvim:simple_query(method, pattern, bufnr, position)
     bufnr,
     method,
     params,
-    ---@param result vscoq.PpString
+    ---@param result vsrocq.PpString
     function(err, result)
       if err then
         vim.notify(
-          ('[vscoq.nvim] %s error:\nparam:\n%s\nerror:%s\n'):format(
+          ('[vsrocq.nvim] %s error:\nparam:\n%s\nerror:%s\n'):format(
             method,
             vim.inspect(params),
             vim.inspect(err)
@@ -363,17 +363,17 @@ function VSCoqNvim:simple_query(method, pattern, bufnr, position)
   )
 end
 
-function VSCoqNvim:about(pattern)
-  self:simple_query('vscoq/about', pattern)
+function VSRocqNvim:about(pattern)
+  self:simple_query('prover/about', pattern)
 end
-function VSCoqNvim:check(pattern)
-  self:simple_query('vscoq/check', pattern)
+function VSRocqNvim:check(pattern)
+  self:simple_query('prover/check', pattern)
 end
-function VSCoqNvim:print(pattern)
-  self:simple_query('vscoq/print', pattern)
+function VSRocqNvim:print(pattern)
+  self:simple_query('prover/print', pattern)
 end
-function VSCoqNvim:locate(pattern)
-  self:simple_query('vscoq/locate', pattern)
+function VSRocqNvim:locate(pattern)
+  self:simple_query('prover/locate', pattern)
 end
 commands[#commands + 1] = 'about'
 commands[#commands + 1] = 'check'
@@ -381,16 +381,16 @@ commands[#commands + 1] = 'print'
 commands[#commands + 1] = 'locate'
 
 ---@param bufnr? buffer
-function VSCoqNvim:resetCoq(bufnr)
+function VSRocqNvim:resetRocq(bufnr)
   bufnr = bufnr or vim.api.nvim_get_current_buf()
-  ---@type vscoq.ResetCoqRequest
+  ---@type vsrocq.ResetRocqRequest
   local params = {
     textDocument = util.make_versioned_text_document_params(bufnr),
   }
-  util.request_async(self.lc, bufnr, 'vscoq/resetCoq', params, function(err)
+  util.request_async(self.lc, bufnr, 'prover/resetRocq', params, function(err)
     if err then
       vim.notify(
-        ('[vscoq.nvim] resetCoq error:\nparam:\n%s\nerror:%s\n'):format(
+        ('[vsrocq.nvim] resetRocq error:\nparam:\n%s\nerror:%s\n'):format(
           vim.inspect(params),
           vim.inspect(err)
         ),
@@ -401,9 +401,9 @@ function VSCoqNvim:resetCoq(bufnr)
     vim.api.nvim_buf_set_lines(self.proofview_panel, 0, -1, false, {})
   end)
 end
-commands[#commands + 1] = 'resetCoq'
+commands[#commands + 1] = 'resetRocq'
 
-function VSCoqNvim:on_CursorMoved()
+function VSRocqNvim:on_CursorMoved()
   if self.config.proof.mode == 'Continuous' then
     -- TODO: debounce_timer
     assert(self:interpretToPoint())
@@ -411,16 +411,16 @@ function VSCoqNvim:on_CursorMoved()
 end
 
 ---@param bufnr buffer
-function VSCoqNvim:detach(bufnr)
+function VSRocqNvim:detach(bufnr)
   assert(self.buffers[bufnr])
   vim.api.nvim_buf_clear_namespace(bufnr, self.highlight_ns, 0, -1)
   vim.api.nvim_clear_autocmds { group = self.ag, buffer = bufnr }
-  vim.api.nvim_buf_del_user_command(bufnr, 'VsCoq')
+  vim.api.nvim_buf_del_user_command(bufnr, 'VsRocq')
   self.buffers[bufnr] = nil
 end
 
 ---@param bufnr buffer
-function VSCoqNvim:attach(bufnr)
+function VSRocqNvim:attach(bufnr)
   assert(self.buffers[bufnr] == nil)
   self.buffers[bufnr] = {}
 
@@ -440,7 +440,7 @@ function VSCoqNvim:attach(bufnr)
     end,
   })
 
-  vim.api.nvim_buf_create_user_command(bufnr, 'VsCoq', function(opts)
+  vim.api.nvim_buf_create_user_command(bufnr, 'VsRocq', function(opts)
     self:command(opts.args)
   end, {
     bang = true,
@@ -458,17 +458,17 @@ function VSCoqNvim:attach(bufnr)
 end
 
 ---@param args string
-function VSCoqNvim:command(args)
+function VSRocqNvim:command(args)
   local _, to, subcommand = args:find('(%w+)%s*')
   if not vim.tbl_contains(commands, subcommand) then
-    error(('"%s" is not a valid VsCoq command'):format(subcommand))
+    error(('"%s" is not a valid VsRocq command'):format(subcommand))
   end
   args = args:sub(to + 1)
   -- TODO: check validity of args? maybe add some spec to commands
-  VSCoqNvim[subcommand](self, #args > 0 and args or nil)
+  VSRocqNvim[subcommand](self, #args > 0 and args or nil)
 end
 
-function VSCoqNvim:on_exit()
+function VSRocqNvim:on_exit()
   self.debounce_timer:stop()
   self.debounce_timer:close()
   for bufnr, _ in pairs(self.buffers) do
@@ -479,4 +479,4 @@ function VSCoqNvim:on_exit()
   vim.api.nvim_clear_autocmds { group = self.ag }
 end
 
-return VSCoqNvim
+return VSRocqNvim

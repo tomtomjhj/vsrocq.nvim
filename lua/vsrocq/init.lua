@@ -1,36 +1,36 @@
 local M = {}
 
 -- Some options values are used both in the server and the client, e.g.,
--- vscoq.proof.mode is used in "check_mode" variable in server, and "goalsHook" in client.
+-- vsrocq.proof.mode is used in "check_mode" variable in server, and "goalsHook" in client.
 --
 -- The vscode client forwards the entire config as `initializationOptions` to the server.
 -- The server itself doesn't have default config values,
 -- so we should forward the config as `init_options`, not `settings`.
 --
--- https://github.com/coq-community/vscoq/blob/main/client/package.json
--- https://github.com/coq-community/vscoq/blob/main/language-server/protocol/settings.ml
--- https://github.com/coq-community/vscoq/blob/main/docs/protocol.md#configuration
+-- https://github.com/rocq-prover/vsrocq/blob/main/client/package.json
+-- https://github.com/rocq-prover/vsrocq/blob/main/language-server/protocol/settings.ml
+-- https://github.com/rocq-prover/vsrocq/blob/main/docs/protocol.md#configuration
 --
--- The "Coq configuration" (vscoq.trace.server, ...) are low-level client-only config handled by vim.lsp.start_client().
+-- The "Rocq configuration" (vsrocq.trace.server, ...) are low-level client-only config handled by vim.lsp.start_client().
 
-local Config = require('vscoq.config')
+local Config = require('vsrocq.config')
 
----@class vscoq.Config
+---@class vsrocq.Config
 M.default_config = Config
 
----@type table<integer, VSCoqNvim> map from client id
+---@type table<integer, VSRocqNvim> map from client id
 M.clients = {}
 
----@param config vscoq.Config
+---@param config vsrocq.Config
 ---@return fun(client: vim.lsp.Client, initialize_result: lsp.InitializeResult)
 local function make_on_init(user_on_init, config)
   return function(client, initialize_result)
-    local ok, VSCoqNvim = pcall(require, 'vscoq.client')
+    local ok, VSRocqNvim = pcall(require, 'vsrocq.client')
     if not ok then
-      vim.print('[vscoq.nvim] on_init failed', VSCoqNvim)
+      vim.print('[vsrocq.nvim] on_init failed', VSRocqNvim)
       return
     end
-    M.clients[client.id] = VSCoqNvim:new(client, config)
+    M.clients[client.id] = VSRocqNvim:new(client, config)
     M.clients[client.id]:panels()
     if user_on_init then
       user_on_init(client, initialize_result)
@@ -85,35 +85,35 @@ local function proofView_notification_handler(_, result, ctx, _)
 end
 
 local vscoqtop_config = {
-  cmd = { 'vscoqtop' },
+  cmd = { 'vsrocqtop' },
   filetypes = { 'coq' },
-  root_markers = { '_CoqProject', '.git' },
+  root_markers = { '_RocqProject', '_CoqProject', '.git' },
 }
 
 -- TODO: don't use custom setup and use lspconfig's add_hook_before?
----@param opts { vscoq?: table<string,any>, lsp?: table<string,any> }
+---@param opts { vsrocq?: table<string,any>, lsp?: table<string,any> }
 function M.setup(opts)
   opts = opts or {}
   opts.lsp = opts.lsp or {}
-  opts.vscoq = Config:new(opts.vscoq or {})
+  opts.vsrocq = Config:new(opts.vsrocq or {})
 
   opts.lsp.handlers = vim.tbl_extend('keep', opts.lsp.handlers or {}, {
-    ['vscoq/updateHighlights'] = updateHighlights_notification_handler,
-    ['vscoq/moveCursor'] = moveCursor_notification_handler,
-    ['vscoq/searchResult'] = searchResult_notification_handler,
-    ['vscoq/proofView'] = proofView_notification_handler,
+    ['prover/updateHighlights'] = updateHighlights_notification_handler,
+    ['prover/moveCursor'] = moveCursor_notification_handler,
+    ['prover/searchResult'] = searchResult_notification_handler,
+    ['prover/proofView'] = proofView_notification_handler,
   })
   local user_on_init = opts.lsp.on_init
-  opts.lsp.on_init = make_on_init(user_on_init, opts.vscoq)
+  opts.lsp.on_init = make_on_init(user_on_init, opts.vsrocq)
   local user_on_attach = opts.lsp.on_attach
   opts.lsp.on_attach = make_on_attach(user_on_attach)
   local user_on_exit = opts.lsp.on_exit
   opts.lsp.on_exit = make_on_exit(user_on_exit)
   assert(
     opts.lsp.init_options == nil and opts.lsp.settings == nil,
-    "[vscoq.nvim] settings must be passed via 'vscoq' field"
+    "[vsrocq.nvim] settings must be passed via 'vsrocq' field"
   )
-  opts.lsp.init_options = opts.vscoq:to_lsp_options()
+  opts.lsp.init_options = opts.vsrocq:to_lsp_options()
   vim.lsp.config('vscoqtop', vim.tbl_deep_extend('force', vscoqtop_config, opts.lsp))
   vim.lsp.enable('vscoqtop')
 end

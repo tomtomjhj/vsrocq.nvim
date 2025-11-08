@@ -1,10 +1,10 @@
 -- ## Lsp Options
 -- Configuration for the language server
 -- (is separate to *Config* because this is what's actually sent to the server)
--- is following setting of vscoqtop
---- https://github.com/coq/vscoq/blob/main/language-server/protocol/settings.ml
+-- is following setting of vsrocqtop
+--- https://github.com/rocq-prover/vsrocq/blob/main/language-server/protocol/settings.ml
 
----@class vscoq.LspOptions
+---@class vsrocq.LspOptions
 local LspOptions = {
   memory = {
     ---@type integer
@@ -21,6 +21,9 @@ local LspOptions = {
       ---@type boolean
       full = true,
     },
+
+    ---@type "String"|"Pp"
+    ppmode = "Pp",
   },
 
   proof = {
@@ -82,14 +85,15 @@ local proof_pointInterpretationMode_table = {
   NextCommand = 1,
 }
 
----@param config vscoq.Config
----@return vscoq.LspOptions
+---@param config vsrocq.Config
+---@return vsrocq.LspOptions
 function LspOptions:new(config)
   local lsp_opts = {
     memory = vim.deepcopy(config.memory),
     goals = {
       diff = vim.deepcopy(config.goals.diff),
       messages = vim.deepcopy(config.goals.messages),
+      ppmode = config.goals.ppmode,
     },
     proof = {
       mode = proof_mode_table[config.proof.mode],

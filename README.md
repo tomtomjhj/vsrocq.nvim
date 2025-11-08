@@ -1,15 +1,15 @@
-# vscoq.nvim
-A Neovim client for [VsCoq 2 `vscoqtop`](https://github.com/coq-community/vscoq).
+# vsrocq.nvim
+A Neovim client for [VsRocq `vsroqtop`](https://github.com/rocq-prover/vsrocq).
 
 ## Prerequisites
 * [Latest stable version of Neovim](https://github.com/neovim/neovim/releases/tag/stable)
-* [`vscoqtop`](https://github.com/coq-community/vscoq#installing-the-language-server)
+* [`vsrocqtop`](https://github.com/rocq-prover/vsrocq#installing-the-language-server)
 
 ## Setup
 ### [vim-plug](https://github.com/junegunn/vim-plug)
 ```vim
 Plug 'whonore/Coqtail' " for ftdetect, syntax, basic ftplugin, etc
-Plug 'tomtomjhj/vscoq.nvim'
+Plug 'tomtomjhj/vsrocq.nvim'
 
 ...
 
@@ -17,8 +17,8 @@ Plug 'tomtomjhj/vscoq.nvim'
 let g:loaded_coqtail = 1
 let g:coqtail#supported = 0
 
-" Setup vscoq.nvim
-lua require'vscoq'.setup()
+" Setup vsrocq.nvim
+lua require'vsrocq'.setup()
 ```
 
 ### [lazy.nvim](https://github.com/folke/lazy.nvim)
@@ -31,100 +31,100 @@ lua require'vscoq'.setup()
   end,
 },
 {
-  'tomtomjhj/vscoq.nvim',
+  'tomtomjhj/vsrocq.nvim',
   filetypes = 'coq',
   dependecies = {
     'whonore/Coqtail',
   },
   opts = {
-    vscoq = { ... }
+    vsrocq = { ... }
     lsp = { ... }
   },
 },
 ```
 
 ## Interface
-* vscoq.nvim uses Neovim's built-in LSP client and nvim-lspconfig.
+* vsrocq.nvim uses Neovim's built-in LSP client and nvim-lspconfig.
   See [kickstart.nvim](https://github.com/nvim-lua/kickstart.nvim/)
   for basic example configurations for working with LSP.
-* `:VsCoq` command
-    * `:VsCoq continuous`: Use the "Continuous" proof mode. It shows goals for the cursor position.
-    * `:VsCoq manual`: Use the "Manual" proof mode (default), where the following four commands are used for navigation.
-        * `:VsCoq stepForward`
-        * `:VsCoq stepBackward`
-        * `:VsCoq interpretToEnd`
-        * `:VsCoq interpretToPoint`
-    * `:VsCoq panels`: Open the proofview panel and query panel.
+* `:VsRocq` command
+    * `:VsRocq continuous`: Use the "Continuous" proof mode. It shows goals for the cursor position.
+    * `:VsRocq manual`: Use the "Manual" proof mode (default), where the following four commands are used for navigation.
+        * `:VsRocq stepForward`
+        * `:VsRocq stepBackward`
+        * `:VsRocq interpretToEnd`
+        * `:VsRocq interpretToPoint`
+    * `:VsRocq panels`: Open the proofview panel and query panel.
     * Queries
-        * `:VsCoq search {pattern}`
-        * `:VsCoq about {pattern}`
-        * `:VsCoq check {pattern}`
-        * `:VsCoq print {pattern}`
-        * `:VsCoq locate {pattern}`
+        * `:VsRocq search {pattern}`
+        * `:VsRocq about {pattern}`
+        * `:VsRocq check {pattern}`
+        * `:VsRocq print {pattern}`
+        * `:VsRocq locate {pattern}`
     * Proofview
-        * `:VsCoq admitted`: Show the admitted goals.
-        * `:VsCoq shelved`: Show the shelved goals.
-        * `:VsCoq goals`: Show the normal goals and messages (default).
+        * `:VsRocq admitted`: Show the admitted goals.
+        * `:VsRocq shelved`: Show the shelved goals.
+        * `:VsRocq goals`: Show the normal goals and messages (default).
     * etc
-        * `:VsCoq jumpToEnd`: Jump to the end of the checked region.
+        * `:VsRocq jumpToEnd`: Jump to the end of the checked region.
 
 ## Configurations
 The `setup()` function takes a table with the followings keys:
-* `vscoq`: Settings specific to VsCoq, used in both the client and the server.
-  This corresponds to the `"configuration"` key in VsCoq's [package.json][].
+* `vsrocq`: Settings specific to VsRocq, used in both the client and the server.
+  This corresponds to the `"configuration"` key in VsRocq's [package.json][].
 * `lsp`: The settings forwarded to `:help lspconfig-setup`. `:help vim.lsp.ClientConfig`.
 
 ### Basic LSP configuration
 
-Some settings in VsCoq's [package.json][] should be configured in nvim's LSP client configuration:
-* `"vscoq.path"` and `"vscoq.args"` → `lsp.cmd`
-* `"vscoq.trace.server"` → `lsp.trace`
+Some settings in VsRocq's [package.json][] should be configured in nvim's LSP client configuration:
+* `"vsrocq.path"` and `"vsrocq.args"` → `lsp.cmd`
+* `"vsrocq.trace.server"` → `lsp.trace`
 
 | Key                | Type                               | Default value                      | Description                                                                                                                    |
 | ------------------ | ---------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `lsp.cmd`          | `string[]`                         | `{ "vscoqtop" }`                   | Path to `vscoqtop` (e.g. `path/to/vscoq/bin/vscoqtop`) and arguments passed                                                    |
+| `lsp.cmd`          | `string[]`                         | `{ "vsrocqtop" }`                   | Path to `vsrocqtop` (e.g. `path/to/vsrocq/bin/vsrocqtop`) and arguments passed                                                    |
 | `lsp.trace`        | `"off" \| "messages" \| "verbose"` | `"off"`                            | Toggles the tracing of communications between the server and client                                                            |
 
-### Memory management (since >= vscoq 2.1.7)
+### Memory management (since >= vsrocq 2.1.7)
 
 | Key                  | Type  | Default value | Description                                                                                                                                           |
 | -------------------- | ----- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `vscoq.memory.limit` | `int` | 4             | specifies the memory limit (in Gb) over which when a user closes a tab, the corresponding document state is discarded in the server to free up memory |
+| `vsrocq.memory.limit` | `int` | 4             | specifies the memory limit (in Gb) over which when a user closes a tab, the corresponding document state is discarded in the server to free up memory |
 
 ### Goal and info view panel
 
 | Key                         | Type                         | Default value | Description                                                                                                   |
 | --------------------------- | ---------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------- |
-| `vscoq.goals.diff.mode`     | `"on" \| "off" \| "removed"` | `"off"`       | Toggles diff mode. If set to `removed`, only removed characters are shown                                     |
-| `vscoq.goals.messages.full` | `bool`                       | `false`       | A toggle to include warnings and errors in the proof view                                                     |
-| `vscoq.goals.maxDepth`      | `int`                        | `17`          | A setting to determine at which point the goal display starts eliding (since version >= 2.1.7 of `vscoqtop`) |
+| `vsrocq.goals.diff.mode`     | `"on" \| "off" \| "removed"` | `"off"`       | Toggles diff mode. If set to `removed`, only removed characters are shown                                     |
+| `vsrocq.goals.messages.full` | `bool`                       | `false`       | A toggle to include warnings and errors in the proof view                                                     |
+| `vsrocq.goals.maxDepth`      | `int`                        | `17`          | A setting to determine at which point the goal display starts eliding (since version >= 2.1.7 of `vsrocqtop`) |
 
 ### Proof checking
 | Key                                   | Type                             | Default value | Description                                                                                                                                                                                                                 |
 | ------------------------------------- | -------------------------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `vscoq.proof.mode`                    | `"Continuous" \| "Manual"`       | `"Manual"`    | Decide whether documents should checked continuously or using the classic navigation commmands (defaults to `Manual`)                                                                                                       |
-| `vscoq.proof.pointInterpretationMode` | `"Cursor" \| "NextCommand"`      | `"Cursor"`    | Determines the point to which the proof should be check to when using the 'Interpret to point' command                                                                                                                      |
-| `vscoq.proof.cursor.sticky`           | `bool`                           | `true`        | A toggle to specify whether the cursor should move as Coq interactively navigates a document (step forward, backward, etc...)                                                                                               |
-| `vscoq.proof.delegation`              | `"None" \| "Skip" \| "Delegate"` | `"None"`      | Decides which delegation strategy should be used by the server. `Skip` allows to skip proofs which are out of focus and should be used in manual mode. `Delegate` allocates a settable amount of workers to delegate proofs |
-| `vscoq.proof.workers`                 | `int`                            | `1`           | Determines how many workers should be used for proof checking                                                                                                                                                               |
-| `vscoq.proof.block`                   | `bool`                           | `true`        | Determines if the the execution of a document should halt on first error (since version >= 2.1.7 of `vscoqtop`)                                                                                                             |
+| `vsrocq.proof.mode`                    | `"Continuous" \| "Manual"`       | `"Manual"`    | Decide whether documents should checked continuously or using the classic navigation commmands (defaults to `Manual`)                                                                                                       |
+| `vsrocq.proof.pointInterpretationMode` | `"Cursor" \| "NextCommand"`      | `"Cursor"`    | Determines the point to which the proof should be check to when using the 'Interpret to point' command                                                                                                                      |
+| `vsrocq.proof.cursor.sticky`           | `bool`                           | `true`        | A toggle to specify whether the cursor should move as Rocq interactively navigates a document (step forward, backward, etc...)                                                                                               |
+| `vsrocq.proof.delegation`              | `"None" \| "Skip" \| "Delegate"` | `"None"`      | Decides which delegation strategy should be used by the server. `Skip` allows to skip proofs which are out of focus and should be used in manual mode. `Delegate` allocates a settable amount of workers to delegate proofs |
+| `vsrocq.proof.workers`                 | `int`                            | `1`           | Determines how many workers should be used for proof checking                                                                                                                                                               |
+| `vsrocq.proof.block`                   | `bool`                           | `true`        | Determines if the the execution of a document should halt on first error (since version >= 2.1.7 of `vsrocqtop`)                                                                                                             |
 
 ### Code completion (experimental)
 | Key                                 | Type                                                      | Default value            | Description                                                   |
 | ----------------------------------- | --------------------------------------------------------- | ------------------------ | ------------------------------------------------------------- |
-| `vscoq.completion.enable`           | `bool`                                                    | `false`                  | Toggle code completion                                        |
-| `vscoq.completion.algorithm`        | `"StructuredSplitUnification" \| "SplitTypeIntersection"` | `"SplitTypeIntersection"`| Which completion algorithm to use                             |
-| `vscoq.completion.unificationLimit` | `int` (minimum 0)                                         | `100`                    | Sets the limit for how many theorems unification is attempted |
+| `vsrocq.completion.enable`           | `bool`                                                    | `false`                  | Toggle code completion                                        |
+| `vsrocq.completion.algorithm`        | `"StructuredSplitUnification" \| "SplitTypeIntersection"` | `"SplitTypeIntersection"`| Which completion algorithm to use                             |
+| `vsrocq.completion.unificationLimit` | `int` (minimum 0)                                         | `100`                    | Sets the limit for how many theorems unification is attempted |
 
 ### Diagnostics
 | Key                      | Type   | Default value | Description                                      |
 | ------------------------ | ------ | ------------- | ------------------------------------------------ |
-| `vscoq.diagnostics.full` | `bool` | `false`       | Toggles the printing of `Info` level diagnostics |
+| `vsrocq.diagnostics.full` | `bool` | `false`       | Toggles the printing of `Info` level diagnostics |
 
 ### Example:
 ```lua
-require'vscoq'.setup {
-  vscoq = {
+require'vsrocq'.setup {
+  vsrocq = {
     proof = {
       -- In manual mode, don't move the cursor when stepping forward/backward a command
       cursor = { sticky = false },
@@ -135,20 +135,20 @@ require'vscoq'.setup {
       -- your mappings, etc
 
       -- In manual mode, use ctrl-alt-{j,k,l} to step.
-      vim.keymap.set({ 'n', 'i' }, '<C-M-j>', '<Cmd>VsCoq stepForward<CR>', { buffer = bufnr, desc='VsCoq step forward' })
-      vim.keymap.set({ 'n', 'i' }, '<C-M-k>', '<Cmd>VsCoq stepBackward<CR>', { buffer = bufnr, desc='VsCoq step backward' })
-      vim.keymap.set({ 'n', 'i' }, '<C-M-l>', '<Cmd>VsCoq interpretToPoint<CR>', { buffer = bufnr, desc='VsCoq interpret to point' })
-      vim.keymap.set({ 'n', 'i' }, '<C-M-G>', '<Cmd>VsCoq interpretToEnd<CR>', { buffer = bufnr, desc = 'VsCoq interpret to end' })
+      vim.keymap.set({ 'n', 'i' }, '<C-M-j>', '<Cmd>VsRocq stepForward<CR>', { buffer = bufnr, desc='VsRocq step forward' })
+      vim.keymap.set({ 'n', 'i' }, '<C-M-k>', '<Cmd>VsRocq stepBackward<CR>', { buffer = bufnr, desc='VsRocq step backward' })
+      vim.keymap.set({ 'n', 'i' }, '<C-M-l>', '<Cmd>VsRocq interpretToPoint<CR>', { buffer = bufnr, desc='VsRocq interpret to point' })
+      vim.keymap.set({ 'n', 'i' }, '<C-M-G>', '<Cmd>VsRocq interpretToEnd<CR>', { buffer = bufnr, desc = 'VsRocq interpret to end' })
     end,
     -- autostart = false, -- use this if you want to manually `:LspStart vscoqtop`.
-    -- cmd = { 'vscoqtop', '-bt', '-vscoq-d', 'all' }, -- for debugging the server
+    -- cmd = { 'vsrocqtop', '-bt', '-vsrocq-d', 'all' }, -- for debugging the server
   },
 }
 ```
 
 NOTE:
 Do not call `lspconfig.vscoqtop.setup()` yourself.
-`require'vscoq'.setup` does it for you.
+`require'vsrocq'.setup` does it for you.
 
 ## Features not implemented yet
 * Fancy proofview rendering
@@ -159,4 +159,4 @@ Do not call `lspconfig.vscoqtop.setup()` yourself.
 * [coq.ctags](https://github.com/tomtomjhj/coq.ctags) for go-to-definition.
 * [coq-lsp.nvim](https://github.com/tomtomjhj/coq-lsp.nvim) for `coq-lsp` client.
 
-[package.json]: https://github.com/coq-community/vscoq/blob/main/client/package.json
+[package.json]: https://github.com/rocq-prover/vsrocq/blob/main/client/package.json

@@ -15,10 +15,10 @@
 --
 -- See also
 -- * https://ocaml.org/manual/5.2/api/Format_tutorial.html
--- * vscoq's implementation: https://github.com/coq-community/vscoq/pull/900
+-- * vsrocq's implementation: https://github.com/rocq-prover/vsrocq/pull/900
 -- * related: https://www.reddit.com/r/ProgrammingLanguages/comments/vzp7td/pretty_printing_which_paper/
 
-local TaggedLines = require('vscoq.tagged_lines')
+local TaggedLines = require('vsrocq.tagged_lines')
 
 ---@alias Enter 0
 local Enter = 0
@@ -26,10 +26,10 @@ local Enter = 0
 local Leave = 1
 
 -- Iterative traversal of PpString
----@param pp_root vscoq.PpString
----@return fun(): Enter|Leave?, vscoq.PpString
+---@param pp_root vsrocq.PpString
+---@return fun(): Enter|Leave?, vsrocq.PpString
 local function PpString_iter(pp_root)
-  ---@type {pp: vscoq.PpString, i?: integer}[]
+  ---@type {pp: vsrocq.PpString, i?: integer}[]
   local stack = { { pp = pp_root } }
 
   local function iter()
@@ -41,17 +41,17 @@ local function PpString_iter(pp_root)
         return Enter, pp
       end
 
-      local child ---@type vscoq.PpString?
+      local child ---@type vsrocq.PpString?
       if pp[1] == 'Ppcmd_glue' then
-        ---@cast pp vscoq.PpString.Ppcmd_glue
+        ---@cast pp vsrocq.PpString.Ppcmd_glue
         child = pp[2][frame.i]
       elseif pp[1] == 'Ppcmd_box' then
-        ---@cast pp vscoq.PpString.Ppcmd_box
+        ---@cast pp vsrocq.PpString.Ppcmd_box
         if frame.i == 1 then
           child = pp[3]
         end
       elseif pp[1] == 'Ppcmd_tag' then
-        ---@cast pp vscoq.PpString.Ppcmd_tag
+        ---@cast pp vsrocq.PpString.Ppcmd_tag
         if frame.i == 1 then
           child = pp[3]
         end
@@ -76,7 +76,7 @@ local LINE_SIZE = 80
 
 ---Populates the `size` field in each PpString.
 ---The defintion of size follows the Oppen's algorithm.
----@param pp_root vscoq.PpString
+---@param pp_root vsrocq.PpString
 local function PpString_compute_sizes(pp_root)
   -- first pass: size of tokens other than break.
   -- Initially, the size of break is set to the number of spaces.
@@ -84,31 +84,31 @@ local function PpString_compute_sizes(pp_root)
   for cmd, pp in PpString_iter(pp_root) do
     if cmd == Leave then
       if pp[1] == 'Ppcmd_empty' then
-        ---@cast pp vscoq.PpString.Ppcmd_empty
+        ---@cast pp vsrocq.PpString.Ppcmd_empty
         pp.size = 0
       elseif pp[1] == 'Ppcmd_string' then
-        ---@cast pp vscoq.PpString.Ppcmd_string
+        ---@cast pp vsrocq.PpString.Ppcmd_string
         pp.size = vim.fn.strdisplaywidth(pp[2])
       elseif pp[1] == 'Ppcmd_glue' then
-        ---@cast pp vscoq.PpString.Ppcmd_glue
+        ---@cast pp vsrocq.PpString.Ppcmd_glue
         pp.size = 0
         for _, child in ipairs(pp[2]) do
           pp.size = pp.size + child.size
         end
       elseif pp[1] == 'Ppcmd_box' then
-        ---@cast pp vscoq.PpString.Ppcmd_box
+        ---@cast pp vsrocq.PpString.Ppcmd_box
         pp.size = pp[3].size
       elseif pp[1] == 'Ppcmd_tag' then
-        ---@cast pp vscoq.PpString.Ppcmd_tag
+        ---@cast pp vsrocq.PpString.Ppcmd_tag
         pp.size = pp[3].size
       elseif pp[1] == 'Ppcmd_print_break' then
-        ---@cast pp vscoq.PpString.Ppcmd_print_break
+        ---@cast pp vsrocq.PpString.Ppcmd_print_break
         pp.size = pp[2]
       elseif pp[1] == 'Ppcmd_force_newline' then
-        ---@cast pp vscoq.PpString.Ppcmd_force_newline
+        ---@cast pp vsrocq.PpString.Ppcmd_force_newline
         pp.size = LINE_SIZE
       elseif pp[1] == 'Ppcmd_comment' then
-        ---@cast pp vscoq.PpString.Ppcmd_comment
+        ---@cast pp vsrocq.PpString.Ppcmd_comment
         pp.size = 0
       end
     end
@@ -117,11 +117,11 @@ local function PpString_compute_sizes(pp_root)
   -- second pass: size of breaks, i.e., distance to the next break/close
   for cmd, pp in PpString_iter(pp_root) do
     if cmd == Leave and pp[1] == 'Ppcmd_glue' then
-      ---@cast pp vscoq.PpString.Ppcmd_glue
-      local last_break ---@type vscoq.PpString.Ppcmd_print_break?
+      ---@cast pp vsrocq.PpString.Ppcmd_glue
+      local last_break ---@type vsrocq.PpString.Ppcmd_print_break?
       for _, child in ipairs(pp[2]) do
         if child[1] == 'Ppcmd_print_break' then
-          ---@cast child vscoq.PpString.Ppcmd_print_break
+          ---@cast child vsrocq.PpString.Ppcmd_print_break
           last_break = child
           last_break.size = 0
         elseif last_break then
@@ -132,15 +132,15 @@ local function PpString_compute_sizes(pp_root)
   end
 end
 
----@class vscoq.Tag
+---@class vsrocq.Tag
 ---@field [1] integer 0-indexed offset of the start line
 ---@field [2] integer start col
 ---@field [3] integer end line offset
 ---@field [4] integer end col
 ---@field [0] string
 
----@param pp_root vscoq.PpString
----@return vscoq.TaggedLines
+---@param pp_root vsrocq.PpString
+---@return vsrocq.TaggedLines
 local function PpString(pp_root)
   if not pp_root.size then
     PpString_compute_sizes(pp_root)
@@ -148,12 +148,12 @@ local function PpString(pp_root)
 
   local lines = {} ---@type string[]
   local cur_line = {} ---@type string[]
-  local tags = {} ---@type vscoq.Tag[]
+  local tags = {} ---@type vsrocq.Tag[]
   local cursor = 0 ---@type integer the 0-indexed position (strdisplaywidth) of the next output
   local cursor_byte = 0 --- like `cursor`, but with byte length
   ---@type {indent: integer, mode: 0|1|2}[] 0: no break. 1: break as needed. 2: break all
   local box_stack = {}
-  ---@type vscoq.Tag[]
+  ---@type vsrocq.Tag[]
   local tag_stack = {}
 
   local function output(str, size)
@@ -165,7 +165,7 @@ local function PpString(pp_root)
   for cmd, pp in PpString_iter(pp_root) do
     if cmd == Enter then
       if pp[1] == 'Ppcmd_string' then
-        ---@cast pp vscoq.PpString.Ppcmd_string
+        ---@cast pp vsrocq.PpString.Ppcmd_string
         for i, s in ipairs(vim.split(pp[2], '\n')) do
           -- handle multi-line string. no indent.
           if i > 1 then
@@ -176,7 +176,7 @@ local function PpString(pp_root)
           output(s, vim.fn.strdisplaywidth(s))
         end
       elseif pp[1] == 'Ppcmd_box' then
-        ---@cast pp vscoq.PpString.Ppcmd_box
+        ---@cast pp vsrocq.PpString.Ppcmd_box
         local mode
         if pp[2][1] == 'Pp_hbox' then
           mode = 0
@@ -189,11 +189,11 @@ local function PpString(pp_root)
         end
         table.insert(box_stack, { indent = cursor + (pp[2][2] or 0), mode = mode })
       elseif pp[1] == 'Ppcmd_tag' then
-        ---@cast pp vscoq.PpString.Ppcmd_tag
+        ---@cast pp vsrocq.PpString.Ppcmd_tag
         table.insert(tag_stack, { #lines, cursor_byte, [0] = pp[2] })
       elseif pp[1] == 'Ppcmd_print_break' then
-        ---@cast pp vscoq.PpString.Ppcmd_print_break
-        -- NOTE: CoqMessage contains breaks without enclosing box.
+        ---@cast pp vsrocq.PpString.Ppcmd_print_break
+        -- NOTE: RocqMessage contains breaks without enclosing box.
         -- This behaves like regular text wrapping.
         local top = #box_stack > 0 and box_stack[#box_stack] or { mode = 1, indent = 0 }
         if top.mode > 0 and (cursor + pp.size > LINE_SIZE or top.mode == 2) then
@@ -205,7 +205,7 @@ local function PpString(pp_root)
           output(string.rep(' ', pp[2]), pp[2])
         end
       elseif pp[1] == 'Ppcmd_force_newline' then
-        ---@cast pp vscoq.PpString.Ppcmd_force_newline
+        ---@cast pp vsrocq.PpString.Ppcmd_force_newline
         local top = #box_stack > 0 and box_stack[#box_stack] or { mode = 1, indent = 0 }
         cursor = top.indent
         cursor_byte = cursor
@@ -216,7 +216,7 @@ local function PpString(pp_root)
       if pp[1] == 'Ppcmd_box' then
         table.remove(box_stack)
       elseif pp[1] == 'Ppcmd_tag' then
-        local tag = table.remove(tag_stack) ---@type vscoq.Tag
+        local tag = table.remove(tag_stack) ---@type vsrocq.Tag
         tag[3] = #lines
         tag[4] = cursor_byte
         table.insert(tags, tag)
